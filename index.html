@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    #start-btn {
+      padding: 15px 30px;
+      font-size: 18px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="start-screen">
+    <p>Hướng camera vào túi hoặc hình in để xem nội dung AR.</p>
+    <button id="start-btn">Bắt đầu quét</button>
+  </div>
+
+  <a-scene mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: yes;"
+    color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <!-- Video có tiếng, preload metadata cho nhẹ, không muted để có âm thanh -->
+      <video id="video1" src="./intro.mp4" loop="true" crossorigin="anonymous" playsinline preload="metadata"></video>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- targets.mind chỉ có 1 ảnh ở index 0 (POSTER 2.png) -->
+    <a-entity id="target1" mindar-image-target="targetIndex: 0">
+      <a-video src="#video1" width="1" height="0.56" position="0 0 0"></a-video>
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    const startBtn = document.querySelector('#start-btn');
+    const startScreen = document.querySelector('#start-screen');
+    const sceneEl = document.querySelector('a-scene');
+
+    const v1 = document.querySelector('#video1');
+    const t1 = document.querySelector('#target1');
+
+    // Khi bấm bắt đầu: ẩn màn hình intro, kích hoạt audio bằng user-gesture rồi mới start MindAR
+    startBtn.addEventListener('click', async () => {
+      startScreen.style.display = 'none';
+
+      // Thao tác phát/tạm dừng trong sự kiện click để trình duyệt cho phép audio trên mobile
+      if (v1) {
+        try {
+          v1.muted = false;
+          await v1.play();
+          v1.pause();
+          v1.currentTime = 0;
+        } catch (e) {
+          console.warn('Không pre-play được video để bật tiếng:', e);
+        }
+      }
+
+      sceneEl.systems["mindar-image-system"].start();
+    });
+
+    // Khi nhận diện được ảnh (target 0) thì chạy video, mất ảnh thì dừng
+    t1.addEventListener("targetFound", () => { v1 && v1.play(); });
+    t1.addEventListener("targetLost", () => { v1 && v1.pause(); });
+  </script>
+</body>
+
+</html>

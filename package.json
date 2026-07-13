@@ -1,0 +1,21 @@
+{
+  "name": "bchung",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "node compile-target.mjs",
+    "serve": "python3 -m http.server 8080"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "overrides": {
+    "canvas": "3.2.3"
+  },
+  "devDependencies": {
+    "canvas": "^3.2.3",
+    "mind-ar": "^1.2.5"
+  }
+}
